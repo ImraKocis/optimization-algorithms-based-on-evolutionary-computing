@@ -1,32 +1,29 @@
-from algorithms.hill_climber.hill_climber import hill_climber_with_timing
+import numpy as np
+
+from algorithms.hill_climber.hill_climber import hill_climber
+from algorithms.hill_climber.plot_hill_climber_data import plot_hill_climber_data
+from utils.objective_functions import rastrigin_objective_function
+from utils.time_complexity_table import create_time_complexity_table
 
 
-def evaluate_hill_climber_timing(objective, initial_solution, m_values, n_values, step_size=0.1):
-    """
-    Evaluates the hill climber for various outer iterations (m_values)
-    and inner iterations (n_values). Returns a list of dictionaries containing
-    the input parameters and timing measurements.
-
-    Each dictionary contains:
-      - input_size_max_iter (m)
-      - input_size_local_search (n)
-      - time_max_iter (sec): total outer loop overhead time
-      - time_local_search (sec): total inner loop time
-      - time_total (sec): sum of outer and inner times
-      - product: m * n (for plotting scaling)
-    """
+def evaluate_time_complexity_hill_climber(base_max_iterations=100, candidates=50, iterations=10, dimensions=2):
     results = []
-    for m in m_values:
-        for n in n_values:
-            # Run the hill climber and measure times.
-            _, _, outer_time, inner_time, total_time = hill_climber_with_timing(
-                objective, initial_solution, max_iter=m, local_search=n, step_size=step_size)
-            results.append({
-                'input_size_max_iter': m,
-                'input_size_local_search': n,
-                'time_max_iter': outer_time,
-                'time_local_search': inner_time,
-                'time_total': total_time,
-                'product': m * n
-            })
-    return results
+    bounds = np.array([[-5.12, 5.12]] * dimensions)
+    for i in range(1, iterations + 1):
+        max_iterations = base_max_iterations * i
+        candidates_per_iteration = candidates * i
+
+        best_sol, best_val, history, result_row = hill_climber(
+            rastrigin_objective_function,
+            dimensions=dimensions,
+            bounds=bounds,
+            n_iterations=max_iterations,
+            step_size=0.1,
+            candidates_per_iteration=candidates_per_iteration,
+        )
+        results.append(result_row)
+
+    df = create_time_complexity_table(results)
+    plot_hill_climber_data(results)
+    print("\nTime Complexity Table:")
+    return df
