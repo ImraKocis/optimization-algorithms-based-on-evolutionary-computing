@@ -5,7 +5,7 @@ def rastrigin_objective_function(x, a=10):
     """
     Parameters:
     x (list/array): Input vector (any dimension)
-    A (float): Function parameter (default: 10)
+    a (float): Function parameter (default: 10)
 
     Returns:
     float: Function value
