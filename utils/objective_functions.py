@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def rastrigin_objective_function(x, a=10):
+def rastrigin_objective_function(x):
     """
     Parameters:
     x (list/array): Input vector (any dimension)
@@ -11,6 +11,7 @@ def rastrigin_objective_function(x, a=10):
     float: Function value
     """
     n = len(x)
+    a = 10
     return a * n + sum(x_i ** 2 - a * np.cos(2 * np.pi * x_i) for x_i in x)
 
 

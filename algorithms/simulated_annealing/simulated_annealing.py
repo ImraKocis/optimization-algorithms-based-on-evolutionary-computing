@@ -43,8 +43,22 @@ def simulated_annealing(
     T0=1.0,
     cooling_schedule="linear",
     cooling_kwargs=None,
-    verbose=False
+    verbose=False,
+    min_temperature=1e-8
 ):
+    """
+    Simulated Annealing algorithm for optimization.
+    :param objective_func:
+    :param bounds: for objective function, shape np.array([[min, max]] * dimensions)
+    :param n_iterations: num of iterations to run
+    :param step_size
+    :param T0: initial temp
+    :param cooling_schedule: one of "linear", "logarithmic", "exponential", "adaptive", "custom"
+    :param cooling_kwargs: additional parameters for cooling function, e.g. {'acceptance_rate': 0.44, 'adapt_factor': 0.95, 'window': 50, 'last_accepts': 0}
+    :param verbose: if True, prints detailed info about each iteration
+    :param min_temperature: minimum temperature to avoid division by zero or log(0)
+    :return: best_solution, best_value, history, acceptance_rate, acceptance_rate_worse
+    """
     dimensions = bounds.shape[0]
     solution = np.random.uniform(bounds[:, 0], bounds[:, 1], size=dimensions)
     value = objective_func(solution)
@@ -53,6 +67,8 @@ def simulated_annealing(
     history = [best_value]
     T = T0
     accepted = 0
+    total_accepted = 0
+    accepted_worse = 0
 
     cooling_func = COOLING_SCHEDULES.get(cooling_schedule, linear_cooling)
     if cooling_kwargs is None:
@@ -61,58 +77,58 @@ def simulated_annealing(
     window = cooling_kwargs.get('window', 50)
 
     for k in range(n_iterations):
+        if T < min_temperature:
+            break
+
         candidate = solution + np.random.randn(dimensions) * step_size
         candidate = np.clip(candidate, bounds[:, 0], bounds[:, 1])
         candidate_value = objective_func(candidate)
         delta = candidate_value - value
 
-        print(f"Iteration {k}: Current Value: {value}, Candidate Value: {candidate_value}, Delta: {delta}, Current Temp: {T}")
-
-        print(f"Probability: {np.exp(-delta / T) * 100:.2f}%")
-
-        if delta < 0 or np.random.rand() < np.exp(-delta / T):
+        if delta < 0:
+            accept = True
+        else:
+            exponent = -delta / T
+            exponent = np.clip(exponent, -700, 700)
+            accept = np.random.random() < np.exp(exponent)
+        if accept:
             solution = candidate
             value = candidate_value
             accepted += 1
+            total_accepted += 1
+            if delta > 0:
+                print(f"Accepted worse solution at iteration {k}: value={value:.6f}, delta={delta:.6f}, T={T:.4f}") if verbose else None
+                accepted_worse += 1
             if value < best_value:
                 best_solution = solution.copy()
                 best_value = value
 
         history.append(best_value)
 
-        # Update temperature
         if cooling_schedule == "adaptive":
-            if (k + 1) % window == 0:
+            if (k + 1) % window == 0 and k+1 != n_iterations:
                 cooling_kwargs['last_accepts'] = accepted
                 T = cooling_func(T, k, **cooling_kwargs)
                 if verbose:
                     print(f"Iter {k}, T={T:.4f}, accepted in window={accepted}, best_value={best_value:.6f}")
-                accepted = 0  # Reset for next window
+                accepted = 0
             else:
                 pass
         elif cooling_schedule == "logarithmic":
-            T = cooling_func(T, k, T0=T0)
+            T = cooling_func(T, k, T0=T0, verbose=verbose)
+        elif cooling_schedule == "exponential":
+            cooling_kwargs_filtered = {key: val for key, val in cooling_kwargs.items() if
+                                       key in ['beta', 'verbose']}
+            T = cooling_func(T, k, T0=T0, **cooling_kwargs_filtered)
         else:
-            print("Other cooling")
-            T = cooling_func(T, k, T0=T0, **cooling_kwargs)
+            cooling_kwargs_filtered = {key: val for key, val in cooling_kwargs.items() if
+                                       key not in ['window', 'last_accepts', 'acceptance_rate', 'adapt_factor']}
+            T = cooling_func(T, k, T0=T0, **cooling_kwargs_filtered)
 
         if verbose and cooling_schedule != "adaptive" and (k % (n_iterations // 10) == 0):
             print(f"Iter {k}, T={T:.4f}, best_value={best_value:.6f}")
 
-    return best_solution, best_value, history
+    acceptance_rate = total_accepted / n_iterations if n_iterations > 0 else 0
+    acceptance_rate_worse = accepted_worse / n_iterations if n_iterations > 0 else 0
 
-
-# for testing:
-# bounds = np.array([[-5.12, 5.12]] * 2)
-# best_sol, best_val, history = simulated_annealing(
-#         rastrigin_objective_function,
-#         bounds,
-#         n_iterations=100,
-#         step_size=0.4,
-#         T0=5.0,
-#         cooling_schedule="adaptive",
-#         cooling_kwargs={'acceptance_rate': 0.44, 'adapt_factor': 0.95, 'window': 20, 'last_accepts': 0},
-#         verbose=True
-#     )
-# print("Best Solution:", best_sol)
-# print("Best Value:", best_val)
+    return best_solution, best_value, history, acceptance_rate, acceptance_rate_worse
