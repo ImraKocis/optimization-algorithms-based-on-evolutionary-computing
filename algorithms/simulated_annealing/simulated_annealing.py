@@ -97,7 +97,6 @@ def simulated_annealing(
             accepted += 1
             total_accepted += 1
             if delta > 0:
-                print(f"Accepted worse solution at iteration {k}: value={value:.6f}, delta={delta:.6f}, T={T:.4f}") if verbose else None
                 accepted_worse += 1
             if value < best_value:
                 best_solution = solution.copy()
@@ -107,8 +106,8 @@ def simulated_annealing(
 
         if cooling_schedule == "adaptive":
             if (k + 1) % window == 0 and k+1 != n_iterations:
-                cooling_kwargs['last_accepts'] = accepted
-                T = cooling_func(T, k, **cooling_kwargs)
+                current_acceptance_rate = accepted / window
+                T = cooling_func(T, k, T0, current_acceptance_rate=current_acceptance_rate, verbose=verbose, **cooling_kwargs)
                 if verbose:
                     print(f"Iter {k}, T={T:.4f}, accepted in window={accepted}, best_value={best_value:.6f}")
                 accepted = 0

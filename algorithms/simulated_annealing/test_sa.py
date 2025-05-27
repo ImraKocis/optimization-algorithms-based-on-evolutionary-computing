@@ -9,9 +9,9 @@ best_sol, best_val, history, acceptance_rate, acceptance_rate_worse = simulated_
         bounds,
         n_iterations=1000,
         step_size=0.2,
-        T0=10000.0,
-        cooling_schedule="linear",
-        cooling_kwargs={'acceptance_rate': 0.44, 'adapt_factor': 0.95, 'window': 20, 'last_accepts': 0},
+        T0=100,
+        cooling_schedule="adaptive",
+        cooling_kwargs={'learning_rate': 0.5, 'cooling_rate': 0.95},
         verbose=True
     )
 print("Best Solution:", best_sol)

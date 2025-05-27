@@ -1,5 +1,7 @@
 import numpy as np
 
+from utils.helpers.min_max import MinMax
+
 
 def linear_cooling(T, k, T0, alpha=0.001, verbose=False):
     """
@@ -34,21 +36,48 @@ def exponential_cooling(T, k, T0, beta=0.95, verbose=False):
     return res
 
 
-def adaptive_cooling(T, k, acceptance_rate=0.44, adapt_factor=0.95, last_accepts=0, window=50, verbose=False):
-    # Every 'window' iterations, adjust the temperature based on acceptance rate
-    res = T
-    if (k+1) % window == 0 and last_accepts is not None:
-        rate = last_accepts / window
-        if rate > acceptance_rate:
-            res = T / adapt_factor  # Cool slower (raise T)
-            print(f"Adaptive cooling at iteration {k}: temperature={res:.4f}, acceptance rate={rate:.2f}") if verbose else None
-            return res
-        else:
-            res = T * adapt_factor  # Cool faster (lower T)
-            print(f"Adaptive cooling at iteration {k}: temperature={res:.4f}, acceptance rate={rate:.2f}") if verbose else None
-            return res
-    print(f"Adaptive cooling at iteration {k}: temperature={res:.4f}, no adjustment") if verbose else None
-    return res  # Otherwise, keep T unchanged
+def adaptive_cooling(
+    T,
+    k,
+    T0,
+    current_acceptance_rate,
+    target_acceptance_rate=0.44,
+    learning_rate=0.1,
+    cooling_rate=0.95,
+    optimal_range=MinMax(0.4, 0.5),
+    max_temperature_change=MinMax(-0.5, 0.5),
+    T_min=1e-6,
+    verbose=False
+):
+    """
+    Adaptive cooling schedule:
+    - If acceptance rate is within optimal range, cool by base rate.
+    - If acceptance rate is too low, heat up.
+    - If acceptance rate is too high, cool down faster.
+    - Temperature change is clamped to max_temperature_change.
+    """
+    assert T >= 0, "temperature must be non-negative"
+    assert T0 >= 0, "initial temperature must be non-negative"
+    assert 0 < target_acceptance_rate < 1
+    assert learning_rate > 0
+    assert 0 < cooling_rate < 1
+    assert 0 <= optimal_range.min < optimal_range.max <= 1
+    assert -1 < max_temperature_change.min < 0 < max_temperature_change.max < 1
+    assert optimal_range.min <= target_acceptance_rate <= optimal_range.max
+
+    T_max = T0 * 1.44
+
+    if current_acceptance_rate > optimal_range.max:
+        # Too much exploration, cool down
+        T = T * (1 - learning_rate * (current_acceptance_rate - target_acceptance_rate))
+    elif current_acceptance_rate < optimal_range.min:
+        # Too little exploration, heat up
+        T = T * (1 + learning_rate * (target_acceptance_rate - current_acceptance_rate))
+    else:
+        # In the optimal range, cool normally
+        T = T * cooling_rate
+    print(f"Adaptive cooling at iteration {k}: temperature={max(T_min, min(T_max, T)):.4f}") if verbose else None
+    return max(T_min, min(T_max, T))
 
 
 def custom_cooling(T, k, T0, verbose=False):
