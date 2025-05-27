@@ -2,17 +2,29 @@ import numpy as np
 
 
 class Particle:
-    def __init__(self, bounds):
+    def __init__(self, bounds, algo_type='minimizer'):
         self.dimensions = bounds.shape[0]
         self.position = np.random.uniform(bounds[:, 0], bounds[:, 1], self.dimensions)
         self.velocity = np.random.uniform(-abs(bounds[:, 1] - bounds[:, 0]), abs(bounds[:, 1] - bounds[:, 0]), self.dimensions)
         self.personal_best_position = self.position.copy()
-        self.personal_best_value = np.inf
+        self.algo_type = algo_type
+        if self.algo_type == 'maximizer':
+            self.personal_best_value = 0
+        elif self.algo_type == 'minimizer':
+            self.personal_best_value = np.inf
+        else:
+            raise ValueError("Invalid algorithm type. Use 'minimizer' or 'maximizer'.")
 
     def update_personal_best(self, value):
-        if value < self.personal_best_value:
-            self.personal_best_value = value
-            self.personal_best_position = self.position.copy()
+        if self.algo_type == 'maximizer':
+            if value > self.personal_best_value:
+                self.personal_best_value = value
+                self.personal_best_position = self.position.copy()
+
+        else:
+            if value < self.personal_best_value:
+                self.personal_best_value = value
+                self.personal_best_position = self.position.copy()
 
 
 class ParticleSwarmOptimizer:
@@ -22,11 +34,12 @@ class ParticleSwarmOptimizer:
         bounds,
         num_particles=30,
         max_iter=1000,
-        w=0.7,
-        c1=1.5,
-        c2=1.5,
+        w=0.9,
+        c1=2,
+        c2=2,
         linear_weight_decay=True,
-        linear_weight_decay_alpha=0.0005
+        linear_weight_decay_alpha=0.0005,
+        algo_type='minimizer'
     ):
         self.objective_func = objective_func
         self.bounds = bounds
@@ -38,10 +51,16 @@ class ParticleSwarmOptimizer:
         self.c2 = c2
         self.linear_weight_decay = linear_weight_decay
         self.linear_weight_decay_alpha = linear_weight_decay_alpha
+        self.algo_type = algo_type
 
         self.particles = [Particle(bounds) for _ in range(num_particles)]
         self.global_best_position = None
-        self.global_best_value = np.inf
+        if self.algo_type == 'maximizer':
+            self.global_best_value = 0
+        elif self.algo_type == 'minimizer':
+            self.global_best_value = np.inf
+        else:
+            raise ValueError("Invalid algorithm type. Use 'minimizer' or 'maximizer'.")
         self.history = []
 
     def optimize(self, verbose=False):
@@ -49,9 +68,7 @@ class ParticleSwarmOptimizer:
             for particle in self.particles:
                 value = self.objective_func(particle.position)
                 particle.update_personal_best(value)
-                if value < self.global_best_value:
-                    self.global_best_value = value
-                    self.global_best_position = particle.position.copy()
+                self.update_global_best(value, particle)
 
             for particle in self.particles:
                 self.update_particle_velocity(particle)
@@ -66,6 +83,7 @@ class ParticleSwarmOptimizer:
         return self.global_best_position, self.global_best_value, self.history
 
     def update_particle_velocity(self, particle):
+        # v(t+1) = w * v(t) + c1 * r1 * (pbest - x(t)) + c2 * r2 * (gbest - x(t))
         r1 = np.random.rand(particle.dimensions)
         r2 = np.random.rand(particle.dimensions)
         cognitive = self.c1 * r1 * (particle.personal_best_position - particle.position)
@@ -73,6 +91,7 @@ class ParticleSwarmOptimizer:
         particle.velocity = self.w * particle.velocity + cognitive + social
 
     def update_particle_position(self, particle):
+        # x(t+1) = x(t) + v(t+1)
         particle.position += particle.velocity
         particle.position = np.clip(particle.position, self.bounds[:, 0], self.bounds[:, 1])
 
@@ -82,3 +101,13 @@ class ParticleSwarmOptimizer:
         w_min, w_max = 0.2, 0.9
         new_w = self.initial_w - (self.linear_weight_decay_alpha * iteration)
         self.w = np.clip(new_w, w_min, w_max)
+
+    def update_global_best(self, value, particle):
+        if self.algo_type == 'maximizer':
+            if value > self.global_best_value:
+                self.global_best_value = value
+                self.global_best_position = particle.position.copy()
+        elif self.algo_type == 'minimizer':
+            if value < self.global_best_value:
+                self.global_best_value = value
+                self.global_best_position = particle.position.copy()
