@@ -13,8 +13,9 @@ def evaluate_pso(
         num_particles=30,
         max_iter=500,
         n_runs=30,
-        tolerance=1e-5,
-        global_minimum=0.0
+        patience=50,
+        verbose=False,
+        evaluate_verbose=False
 ):
     results = []
     for run in range(n_runs):
@@ -27,17 +28,12 @@ def evaluate_pso(
             w_min=w_min,
             c1=c1,
             c2=c2,
-            patience=max_iter # patience is set to max_iter for evaluation purposes
+            patience=patience,
+            verbose=verbose
         )
         start_time = time.time()
-        best_pos, best_val, history = pso.optimize()
+        best_pos, best_val, history, convergence_iter = pso.optimize()
         elapsed = time.time() - start_time
-
-        convergence_iter = None
-        for idx, val in enumerate(history):
-            if abs(val - global_minimum) < tolerance:
-                convergence_iter = idx
-                break
 
         results.append({
             'c1': c1,
@@ -50,6 +46,9 @@ def evaluate_pso(
             'time': elapsed,
             'history': history
         })
+        if evaluate_verbose:
+            print(f"Run {run + 1}/{n_runs}: Best Value = {best_val:.6f}, Time = {elapsed:.2f}s")
+
     return results
 
 

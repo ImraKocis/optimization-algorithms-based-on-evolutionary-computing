@@ -27,10 +27,13 @@ class Particle:
     def update_velocity(self, w, c1, c2, global_best_position):
         r1 = np.random.rand(self.dimensions)
         r2 = np.random.rand(self.dimensions)
+
         # c1 * r1 * (pbest - x(t))
         cognitive = c1 * r1 * (self.personal_best_position - self.position)
+
         # c2 * r2 * (gbest - x(t))
         social = c2 * r2 * (global_best_position - self.position)
+
         # v(t+1) = w * v(t) + c1 * r1 * (pbest - x(t)) + c2 * r2 * (gbest - x(t))
         self.velocity = w * self.velocity + cognitive + social
         # clip velocity to max 20% of search space
@@ -70,7 +73,7 @@ class ParticleSwarmOptimizer:
         w_max=0.9,
         c1=2.0,
         c2=2.0,
-        convergence_threshold=1e-6,
+        convergence_threshold=1e-10,
         patience=50,
         maximize=False,
         verbose=False
@@ -94,7 +97,7 @@ class ParticleSwarmOptimizer:
         assert max_iter > 0, "Maximum iterations must be a positive integer."
         assert w_min > 0 and w_max > 0, "Inertia weights must be non-negative."
         assert w_max > w_min, "And w_max must be greater than w_min."
-        assert c1 > 0 and c2 > 0, "Cognitive and social coefficients must be positive."
+        assert c1 >= 0 and c2 >= 0, "Cognitive and social coefficients can not be negative."
         assert convergence_threshold > 0, "Convergence threshold must be positive."
         assert patience > 0, "Patience must be a positive integer."
 
@@ -107,6 +110,7 @@ class ParticleSwarmOptimizer:
         self.particle_velocities_history = []
         self.stagnation_counter = 0
         self.window = 10*self.dimensions
+        self.convergence_iteration = None
 
     def optimize(self):
         self.ensure_initialized()
@@ -119,6 +123,7 @@ class ParticleSwarmOptimizer:
             self.best_value_history.append(self.global_best_value)
 
             if self.check_convergence():
+                self.convergence_iteration = i
                 if self.verbose:
                     print(f"Convergence reached at iteration {i}.")
                 break
@@ -128,7 +133,7 @@ class ParticleSwarmOptimizer:
                 diversity = self.calculate_diversity()
                 print(f"Iter {i}, Best: {self.global_best_value:.6f}, Diversity: {diversity:.4f}")
 
-        return self.global_best_position, self.global_best_value, self.best_value_history
+        return self.global_best_position, self.global_best_value, self.best_value_history, self.convergence_iteration
 
     def update_weight_linearly(self, iteration):
         self.w = self.w_max - (self.w_max - self.w_min) * (iteration / self.max_iter)
