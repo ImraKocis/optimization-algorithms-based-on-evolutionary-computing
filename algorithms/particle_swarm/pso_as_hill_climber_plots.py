@@ -6,7 +6,6 @@ import seaborn as sns
 
 
 def plot_pso_comparison(results_df):
-    """Create comprehensive comparison plots between Normal and Special PSO."""
 
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 
