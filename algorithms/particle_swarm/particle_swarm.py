@@ -96,7 +96,7 @@ class ParticleSwarmOptimizer:
         assert num_particles > 0, "Number of particles must be a positive integer."
         assert max_iter > 0, "Maximum iterations must be a positive integer."
         assert w_min > 0 and w_max > 0, "Inertia weights must be non-negative."
-        assert w_max > w_min, "And w_max must be greater than w_min."
+        assert w_max >= w_min, "And w_max must be greater or equal to w_min."
         assert c1 >= 0 and c2 >= 0, "Cognitive and social coefficients can not be negative."
         assert convergence_threshold > 0, "Convergence threshold must be positive."
         assert patience > 0, "Patience must be a positive integer."
