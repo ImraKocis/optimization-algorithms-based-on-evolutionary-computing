@@ -11,11 +11,12 @@ aco = AntColonyOptimizer(
     beta=3.0,
     evaporation_rate=0.3,
     Q=100,
-    elite_factor=2.0
+    elite_factor=2.0,
+    verbose=True
 )
 
 print("Running Ant Colony Optimization...")
-best_route, best_distance, history = aco.optimize(verbose=True)
+best_route, best_distance, history = aco.optimize()
 
 gap = ((best_distance - 7542) / 7542) * 100
 print(f"\nTuned ACO Results:")
