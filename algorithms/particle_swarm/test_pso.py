@@ -6,7 +6,7 @@ from utils.objective_functions import rastrigin_objective_function
 """
 For 2dim Rastrigin function:
 minimum at [0, 0] with value 0.
-maximum at [-4.52299366..., 4.52299366...] with value 80.63.
+maximum at [-4.52299366..., 4.52299366...] with value 80.7.
 """
 
 bounds = np.array([[-5.12, 5.12]] * 2)
