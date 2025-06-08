@@ -6,16 +6,12 @@ from algorithms.ga.individual import Individual
 
 
 class SelectionOperator(ABC):
-    """Abstract base class for selection operators"""
-
     @abstractmethod
     def select(self, population: List[Individual], num_parents: int) -> List[Individual]:
         pass
 
 
 class TournamentSelection(SelectionOperator):
-    """Tournament selection implementation"""
-
     def __init__(self, tournament_size: int = 3):
         self.tournament_size = tournament_size
 
@@ -32,8 +28,6 @@ class TournamentSelection(SelectionOperator):
 
 
 class RouletteWheelSelection(SelectionOperator):
-    """Roulette wheel selection implementation"""
-
     def select(self, population: List[Individual], num_parents: int) -> List[Individual]:
         # Handle negative fitness values by shifting
         min_fitness = min(ind.fitness for ind in population)

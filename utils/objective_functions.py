@@ -11,8 +11,8 @@ def rastrigin_objective_function(x):
     float: Function value
     """
     n = len(x)
-    a = 10
-    return a * n + sum(x_i ** 2 - a * np.cos(2 * np.pi * x_i) for x_i in x)
+    A = 10
+    return A * n + sum(x_i ** 2 - A * np.cos(2 * np.pi * x_i) for x_i in x)
 
 
 def rastrigin_2d(x1, x2, a=10):

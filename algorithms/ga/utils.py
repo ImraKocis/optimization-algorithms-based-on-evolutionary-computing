@@ -14,4 +14,5 @@ class CrossoverMethod(Enum):
 
 class MutationMethod(Enum):
     GAUSSIAN = "gaussian"
+    ADAPTIVE_GAUSSIAN = "adaptive_gaussian"
     FLIP_BIT = "flip_bit"

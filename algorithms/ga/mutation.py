@@ -32,6 +32,34 @@ class GaussianMutation(MutationOperator):
         return Individual(mutated_genes)
 
 
+class AdaptiveGaussianMutation(MutationOperator):
+    """Gaussian mutation with adaptive sigma"""
+
+    def __init__(self, initial_mutation_rate=0.1, initial_sigma=0.5,
+                 final_sigma=0.01, max_generations=500):
+        self.initial_mutation_rate = initial_mutation_rate
+        self.initial_sigma = initial_sigma
+        self.final_sigma = final_sigma
+        self.max_generations = max_generations
+        self.current_generation = 0
+
+    def update_generation(self, generation):
+        self.current_generation = generation
+
+    def mutate(self, individual: Individual) -> Individual:
+        # Adaptive sigma: starts high, decreases over time
+        progress = self.current_generation / self.max_generations
+        current_sigma = self.initial_sigma * (1 - progress) + self.final_sigma * progress
+
+        mutated_genes = individual.genes.copy()
+
+        for i in range(len(mutated_genes)):
+            if random.random() < self.initial_mutation_rate:
+                mutated_genes[i] += np.random.normal(0, current_sigma)
+
+        return Individual(mutated_genes)
+
+
 class FlipBitMutation(MutationOperator):
     """Flip-bit mutation for binary optimization"""
 

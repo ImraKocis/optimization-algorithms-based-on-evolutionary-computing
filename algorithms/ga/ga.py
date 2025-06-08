@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from algorithms.ga.crossover import SinglePointCrossover, TwoPointCrossover, UniformCrossover
 from algorithms.ga.individual import Individual
-from algorithms.ga.mutation import GaussianMutation, FlipBitMutation
+from algorithms.ga.mutation import GaussianMutation, FlipBitMutation, AdaptiveGaussianMutation
 from algorithms.ga.population import PopulationInitializer
 from algorithms.ga.selection import TournamentSelection, RouletteWheelSelection
 from algorithms.ga.utils import SelectionMethod, CrossoverMethod, MutationMethod
@@ -69,6 +69,12 @@ class GeneticAlgorithm:
     def _setup_mutation(self, method: MutationMethod, sigma: float):
         if method == MutationMethod.GAUSSIAN:
             self.mutation_operator = GaussianMutation(self.mutation_rate, sigma)
+        elif method == MutationMethod.ADAPTIVE_GAUSSIAN:
+            self.mutation_operator = AdaptiveGaussianMutation(
+                initial_mutation_rate=self.mutation_rate,
+                initial_sigma=sigma,
+                max_generations=self.max_generations
+            )
         elif method == MutationMethod.FLIP_BIT:
             self.mutation_operator = FlipBitMutation(self.mutation_rate)
         else:
@@ -80,28 +86,31 @@ class GeneticAlgorithm:
         for individual in self.population:
             individual.calculate_fitness(fitness_function)
 
+        self._update_statistics()
         stagnation_counter = 0
-        previous_best_fitness = float('-inf')
+        previous_best_fitness = None
 
         for generation in range(self.max_generations):
             self.generation = generation
 
-            self._update_statistics()
-
             current_best_fitness = max(ind.fitness for ind in self.population)
-            if abs(current_best_fitness - previous_best_fitness) < 1e-10:
-                stagnation_counter += 1
-            else:
-                stagnation_counter = 0
 
-            if stagnation_counter >= self.stagnation_limit:
-                print(f"Evolution stopped due to stagnation at generation {generation}")
-                break
+            if previous_best_fitness is not None:
+                if abs(current_best_fitness - previous_best_fitness) < 1e-10:
+                    stagnation_counter += 1
+                else:
+                    stagnation_counter = 0
+
+                if stagnation_counter >= self.stagnation_limit:
+                    print(f"Evolution stopped due to stagnation at generation {generation}")
+                    break
 
             previous_best_fitness = current_best_fitness
 
             # Create next generation
-            self.population = self._create_next_generation(fitness_function)
+            if self.generation < self.max_generations - 1:
+                self.population = self._create_next_generation(fitness_function)
+            self._update_statistics()
 
             # Print progress
             if generation % 50 == 0:
