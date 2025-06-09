@@ -19,16 +19,15 @@ class KnapsackProblem:
         self.capacity = capacity
         self.num_items = len(items)
 
-        # Extract weights and values for easier computation
         self.weights = np.array([item.weight for item in items])
         self.values = np.array([item.value for item in items])
 
-        # Calculate problem statistics
+        # calculate problem statistics
         self.total_weight = np.sum(self.weights)
         self.total_value = np.sum(self.values)
 
     def fitness_function(self, genes: np.ndarray) -> float:
-        # Convert to binary (in case of floating point representation)
+        # convert to binary (in case of floating point representation)
         selection = (genes > 0.5).astype(int)
 
         total_weight = np.sum(selection * self.weights)
@@ -36,20 +35,18 @@ class KnapsackProblem:
 
         # Penalty for exceeding capacity
         if total_weight <= self.capacity:
-            # Feasible solution - return actual value
             return total_value
         else:
-            # Infeasible solution - much stronger penalty
             excess_weight = total_weight - self.capacity
             excess_ratio = excess_weight / self.capacity
 
-            # Progressive penalty that becomes very harsh for large violations
-            if excess_ratio <= 0.1:  # Small violation (≤10%)
+            # progressive penalty that becomes very harsh for large violations
+            if excess_ratio <= 0.1:  # 10% and less
                 penalty_factor = 0.5
-            elif excess_ratio <= 0.2:  # Medium violation (≤20%)
+            elif excess_ratio <= 0.2:  # 20% and less
                 penalty_factor = 0.8
-            else:  # Large violation (>20%)
-                penalty_factor = 1.5  # Penalty exceeds value
+            else:
+                penalty_factor = 1.5
 
             penalty = total_value * penalty_factor
             return total_value - penalty
@@ -120,7 +117,6 @@ def create_random_knapsack_problem(
         items.append(KnapsackItem(item_id=i, value=value, weight=weight))
         total_weight += weight
 
-    # Set capacity to allow approximately capacity_factor of items
     capacity = total_weight * capacity_factor
 
     return KnapsackProblem(items=items, capacity=capacity)

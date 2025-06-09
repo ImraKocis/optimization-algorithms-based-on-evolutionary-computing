@@ -12,9 +12,6 @@ def solve_rastrigin():
     dimensions = 10
     bounds = (-5.12, 5.12)
 
-    fitness_transformer = FitnessTransformer(rastrigin_objective_function, method="negative")
-
-    # Initialize GA
     ga = GeneticAlgorithm(
         population_size=200,
         crossover_rate=0.8,
@@ -26,12 +23,15 @@ def solve_rastrigin():
         selection_method=SelectionMethod.TOURNAMENT,
         crossover_method=CrossoverMethod.TWO_POINT,
         mutation_method=MutationMethod.ADAPTIVE_GAUSSIAN,
-        tournament_size=3,
-        mutation_sigma=0.5
+        tournament_size=7,
+        mutation_sigma=0.5,
+        minimize=True
     )
 
     # Evolve solution
-    best_solution = ga.evolve(fitness_transformer)
+    best_solution = ga.evolve(rastrigin_objective_function)
+    con_i = ga.get_convergence_info()
+    print(f"Convergence generation: {con_i}")
 
     minimized_value = rastrigin_objective_function(best_solution.genes)
 

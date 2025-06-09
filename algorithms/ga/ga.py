@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from typing import List, Callable
+from typing import List, Callable, Tuple
 import matplotlib.pyplot as plt
 
 from algorithms.ga.crossover import SinglePointCrossover, TwoPointCrossover, UniformCrossover
@@ -8,10 +8,11 @@ from algorithms.ga.individual import Individual
 from algorithms.ga.mutation import GaussianMutation, FlipBitMutation, AdaptiveGaussianMutation
 from algorithms.ga.population import PopulationInitializer
 from algorithms.ga.selection import TournamentSelection, RouletteWheelSelection
-from algorithms.ga.utils import SelectionMethod, CrossoverMethod, MutationMethod
+from algorithms.ga.utils import SelectionMethod, CrossoverMethod, MutationMethod, find_convergence_generation
 
-import matplotlib
-matplotlib.use('TkAgg') # remove for jupiter
+
+# import matplotlib
+# matplotlib.use('TkAgg') # remove for jupiter
 
 
 class GeneticAlgorithm:
@@ -28,7 +29,9 @@ class GeneticAlgorithm:
                  crossover_method: CrossoverMethod = CrossoverMethod.SINGLE_POINT,
                  mutation_method: MutationMethod = MutationMethod.GAUSSIAN,
                  tournament_size: int = 3,
-                 mutation_sigma: float = 0.1):
+                 mutation_sigma: float = 0.1,
+                 minimize: bool = False,
+                 verbose: bool = True):
 
         self.population_size = population_size
         self.crossover_rate = crossover_rate
@@ -36,23 +39,28 @@ class GeneticAlgorithm:
         self.elitism_count = elitism_count
         self.max_generations = max_generations
         self.stagnation_limit = stagnation_limit
+        self.minimize = minimize
+        self.verbose = verbose
 
         self.population_initializer = population_initializer
         self._setup_selection(selection_method, tournament_size)
         self._setup_crossover(crossover_method)
         self._setup_mutation(mutation_method, mutation_sigma)
+        self.comparison_func = min if minimize else max
+        self.sort_reverse = not minimize
 
         self.generation = 0
         self.best_fitness_history = []
         self.avg_fitness_history = []
         self.population = []
         self.best_individual = None
+        self.convergence_generation = None
 
     def _setup_selection(self, method: SelectionMethod, tournament_size: int):
         if method == SelectionMethod.TOURNAMENT:
-            self.selection_operator = TournamentSelection(tournament_size)
+            self.selection_operator = TournamentSelection(tournament_size, minimize=self.minimize)
         elif method == SelectionMethod.ROULETTE_WHEEL:
-            self.selection_operator = RouletteWheelSelection()
+            self.selection_operator = RouletteWheelSelection(minimize=self.minimize)
         else:
             raise ValueError(f"Unknown selection method: {method}")
 
@@ -93,7 +101,7 @@ class GeneticAlgorithm:
         for generation in range(self.max_generations):
             self.generation = generation
 
-            current_best_fitness = max(ind.fitness for ind in self.population)
+            current_best_fitness = self.comparison_func(ind.fitness for ind in self.population)
 
             if previous_best_fitness is not None:
                 if abs(current_best_fitness - previous_best_fitness) < 1e-10:
@@ -102,71 +110,83 @@ class GeneticAlgorithm:
                     stagnation_counter = 0
 
                 if stagnation_counter >= self.stagnation_limit:
-                    print(f"Evolution stopped due to stagnation at generation {generation}")
+                    if self.verbose:
+                        print(f"Stagnation detected at generation {generation}, best fitness: {current_best_fitness:.6f}")
                     break
 
             previous_best_fitness = current_best_fitness
 
-            # Create next generation
             if self.generation < self.max_generations - 1:
                 self.population = self._create_next_generation(fitness_function)
             self._update_statistics()
+            self.convergence_generation = self.get_convergence_generation()
 
-            # Print progress
-            if generation % 50 == 0:
-                best_fitness = max(ind.fitness for ind in self.population)
+            if generation % 50 == 0 and self.verbose:
+                best_fitness = self.comparison_func(ind.fitness for ind in self.population)
                 avg_fitness = np.mean([ind.fitness for ind in self.population])
                 print(f"Generation {generation}: Best={best_fitness:.6f}, Avg={avg_fitness:.6f}")
 
-        # Return best individual found
-        self.best_individual = max(self.population, key=lambda ind: ind.fitness)
+        self.best_individual = self.comparison_func(self.population, key=lambda ind: ind.fitness)
         return self.best_individual
 
     def _create_next_generation(self, fitness_function: Callable) -> List[Individual]:
-        """Create the next generation using GA operators"""
-        # Sort population by fitness (descending)
-        self.population.sort(key=lambda ind: ind.fitness, reverse=True)
+        self.population.sort(key=lambda ind: ind.fitness, reverse=self.sort_reverse)
 
         next_generation = []
 
-        # Elitism: Keep best individuals
         for i in range(self.elitism_count):
             next_generation.append(self.population[i].copy())
 
-        # Generate offspring to fill the rest of the population
         while len(next_generation) < self.population_size:
-            # Selection
             parents = self.selection_operator.select(self.population, 2)
             parent1, parent2 = parents[0], parents[1]
 
-            # Crossover
             if random.random() < self.crossover_rate:
                 offspring1, offspring2 = self.crossover_operator.crossover(parent1, parent2)
             else:
                 offspring1, offspring2 = parent1.copy(), parent2.copy()
 
-            # Mutation
             offspring1 = self.mutation_operator.mutate(offspring1)
             offspring2 = self.mutation_operator.mutate(offspring2)
 
-            # Calculate fitness for new offspring
             offspring1.calculate_fitness(fitness_function)
             offspring2.calculate_fitness(fitness_function)
 
-            # Add to next generation
             next_generation.extend([offspring1, offspring2])
 
-        # Ensure exact population size
         return next_generation[:self.population_size]
 
+    def get_convergence_generation(self):
+        return find_convergence_generation(
+            self.best_fitness_history,
+            self.stagnation_limit,
+            self.minimize
+        )
+
+    def get_convergence_info(self):
+        if self.convergence_generation is None:
+            self.convergence_generation = self.get_convergence_generation()
+
+        convergence_fitness = self.best_fitness_history[self.convergence_generation]
+        total_generations = len(self.best_fitness_history) - 1
+
+        return {
+            'convergence_generation': self.convergence_generation,
+            'convergence_fitness': convergence_fitness,
+            'total_generations': total_generations,
+            'generations_after_convergence': total_generations - self.convergence_generation - 1,
+            'improvement_ratio': self.convergence_generation / total_generations if total_generations > 0 else 0
+        }
+
     def _update_statistics(self):
-        """Update fitness statistics for tracking"""
         fitnesses = [ind.fitness for ind in self.population]
-        self.best_fitness_history.append(max(fitnesses))
+        self.best_fitness_history.append(self.comparison_func(fitnesses))
         self.avg_fitness_history.append(np.mean(fitnesses))
 
+    def get_statistics(self) -> Tuple[List[float], List[float]]:
+        return self.best_fitness_history, self.avg_fitness_history
+
     def plot_evolution(self):
-        """Plot the evolution progress"""
         plt.figure(figsize=(12, 5))
 
         plt.subplot(1, 2, 1)

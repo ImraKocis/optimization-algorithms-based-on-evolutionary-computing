@@ -7,16 +7,12 @@ from algorithms.ga.individual import Individual
 
 
 class MutationOperator(ABC):
-    """Abstract base class for mutation operators"""
-
     @abstractmethod
     def mutate(self, individual: Individual) -> Individual:
         pass
 
 
 class GaussianMutation(MutationOperator):
-    """Gaussian mutation for continuous optimization"""
-
     def __init__(self, mutation_rate: float = 0.1, sigma: float = 0.1):
         self.mutation_rate = mutation_rate
         self.sigma = sigma
@@ -26,15 +22,12 @@ class GaussianMutation(MutationOperator):
 
         for i in range(len(mutated_genes)):
             if random.random() < self.mutation_rate:
-                # Add Gaussian noise to the gene
                 mutated_genes[i] += np.random.normal(0, self.sigma)
 
         return Individual(mutated_genes)
 
 
 class AdaptiveGaussianMutation(MutationOperator):
-    """Gaussian mutation with adaptive sigma"""
-
     def __init__(self, initial_mutation_rate=0.1, initial_sigma=0.5,
                  final_sigma=0.01, max_generations=500):
         self.initial_mutation_rate = initial_mutation_rate
@@ -47,7 +40,7 @@ class AdaptiveGaussianMutation(MutationOperator):
         self.current_generation = generation
 
     def mutate(self, individual: Individual) -> Individual:
-        # Adaptive sigma: starts high, decreases over time
+        # starts high, decreases over time
         progress = self.current_generation / self.max_generations
         current_sigma = self.initial_sigma * (1 - progress) + self.final_sigma * progress
 
@@ -61,8 +54,6 @@ class AdaptiveGaussianMutation(MutationOperator):
 
 
 class FlipBitMutation(MutationOperator):
-    """Flip-bit mutation for binary optimization"""
-
     def __init__(self, mutation_rate: float = 0.01):
         self.mutation_rate = mutation_rate
 
@@ -71,7 +62,6 @@ class FlipBitMutation(MutationOperator):
 
         for i in range(len(mutated_genes)):
             if random.random() < self.mutation_rate:
-                # Flip the bit (0 becomes 1, 1 becomes 0)
                 mutated_genes[i] = 1.0 - mutated_genes[i]
 
         return Individual(mutated_genes)
