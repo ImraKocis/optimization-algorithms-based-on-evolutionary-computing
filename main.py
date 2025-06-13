@@ -1,5 +1,10 @@
-from algorithms.ga.test_usage import solve_rastrigin, solve_knapsack
+from algorithms.gradient_descent.experiment import gd_experiment, plot_experiment_results
+
+import matplotlib
+matplotlib.use('TkAgg') # remove for jupiter
+
 
 if __name__ == "__main__":
-    solve_rastrigin()
-    # solve_knapsack()
+    results = gd_experiment()
+    plot_experiment_results(results)
+

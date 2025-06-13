@@ -207,6 +207,23 @@ class NeedlemanWunsch:
         plt.tight_layout()
         plt.show()
 
+    def print_alignment(self, aligned_seq1: str, aligned_seq2: str, score: int):
+        method_name = "Gap-Priority" if self.traceback_method == "gap_priority" else "Standard"
+        print(f"\n{method_name} Alignment (Score: {score}):")
+        print(f"Seq1: {aligned_seq1}")
+
+        alignment_visual = ""
+        for a, b in zip(aligned_seq1, aligned_seq2):
+            if a == b:
+                alignment_visual += "|"
+            elif a == "-" or b == "-":
+                alignment_visual += " "
+            else:
+                alignment_visual += "."
+
+        print(f"      {alignment_visual}")
+        print(f"Seq2: {aligned_seq2}")
+
     @staticmethod
     def get_alignment_stats(aligned_seq1: str, aligned_seq2: str) -> dict:
         """
