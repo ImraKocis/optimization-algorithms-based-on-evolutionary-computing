@@ -12,4 +12,4 @@ def rastrigin_2d(x1, x2, a=10):
 
 
 def quadratic_objective_function(x):
-    return (x - 2)**2 + 1
+    return (x - 3)**2 + 1

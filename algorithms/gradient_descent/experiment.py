@@ -8,7 +8,7 @@ from utils.objective_functions import quadratic_objective_function
 def gd_experiment():
     step_sizes = np.array([0.1, 1e-5, 1e-10, 1e-15])
     learning_rates = np.array([0.25, 0.1, 0.01, 0.005])
-    x0 = 0.0
+    x0 = 1.0
 
     results = {}
 
@@ -57,13 +57,12 @@ def gd_experiment():
 
 def plot_experiment_results(results):
     x_vals = np.linspace(-1, 5, 500)
-    f_vals = (x_vals - 2) ** 2 + 1
+    f_vals = (x_vals - 3) ** 2 + 1
 
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
 
-    # Plot 1: Numerical gradient optimization paths
-    ax1.plot(x_vals, f_vals, 'k-', linewidth=2, label='f(x) = (x-2)² + 1')
-    ax1.axvline(x=2, color='red', linestyle='--', alpha=0.7, label='True minimum')
+    ax1.plot(x_vals, f_vals, 'k-', linewidth=2, label='f(x) = (x-3)² + 1')
+    ax1.axvline(x=3, color='red', linestyle='--', alpha=0.7, label='True minimum')
 
     line_styles = ['-', '--', '-.', ':', '-', '--', '-.', ':', '-', '--', '-.', ':', '-', '--', '-.', ':']
     colors = ['blue', 'green', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan', 'red', 'lime', 'magenta',
@@ -72,7 +71,6 @@ def plot_experiment_results(results):
     for key, data in results.items():
         if key.startswith('num_h='):
             if len(data["x_history"]) > 2 and len(data["f_history"]) > 2:
-                print(f"Plotting {key} with {len(data['x_history'])} points")
                 parts = key.split('_')
                 h_val = float(parts[1].split('=')[1])
                 lr_val = float(parts[2].split('=')[1])
@@ -89,9 +87,8 @@ def plot_experiment_results(results):
     ax1.grid(True, alpha=0.3)
     ax1.set_ylim(0.9, 6)
 
-    # Plot 2: Exact gradient optimization paths
-    ax2.plot(x_vals, f_vals, 'k-', linewidth=2, label='f(x) = (x-2)² + 1')
-    ax2.axvline(x=2, color='red', linestyle='--', alpha=0.7, label='True minimum')
+    ax2.plot(x_vals, f_vals, 'k-', linewidth=2, label='f(x) = (x-3)² + 1')
+    ax2.axvline(x=3, color='red', linestyle='--', alpha=0.7, label='True minimum')
 
     i = 0
     for key, data in results.items():
@@ -110,7 +107,6 @@ def plot_experiment_results(results):
     ax2.grid(True, alpha=0.3)
     ax2.set_ylim(0.9, 6)
 
-    # Plot 3: Numerical gradient convergence (log scale)
     i = 0
     for key, data in results.items():
         if key.startswith('num_h='):
