@@ -199,7 +199,6 @@ class DifferentialEvolution:
         print(f"F (mutation factor): {self.F}")
         print(f"CR (crossover rate): {self.CR}")
         print(f"Dimensions: {self.dimensions}")
-        print("-" * 50)
 
         # Evolution loop
         for generation in range(max_generations):
@@ -215,7 +214,6 @@ class DifferentialEvolution:
 
             # Check convergence
             if abs(prev_best - self.best_fitness) < tolerance:
-                print(f"\nprev_best = {prev_best:.8f}, best_fitness = {self.best_fitness:.8f}")
                 if verbose:
                     print(f"\nConverged at generation {generation + 1}")
                 if self.stagnation_count >= self.patience:
@@ -225,7 +223,6 @@ class DifferentialEvolution:
             else:
                 self.stagnation_count = 0
 
-        # Prepare results
         result = {
             'best_solution': self.best_individual,
             'best_fitness': self.best_fitness,
@@ -253,7 +250,6 @@ class DifferentialEvolution:
 
         generations = range(len(self.diversity_history))
 
-        # Plot diversity
         ax1.plot(generations, self.diversity_history, 'b-', linewidth=2, label='Population Diversity')
         ax1.set_xlabel('Generation')
         ax1.set_ylabel('Diversity')
@@ -261,7 +257,6 @@ class DifferentialEvolution:
         ax1.grid(True, alpha=0.3)
         ax1.legend()
 
-        # Plot fitness
         fitness_generations = range(len(self.fitness_history))
         ax2.plot(fitness_generations, self.fitness_history, 'r-', linewidth=2, label='Best Fitness')
         ax2.set_xlabel('Generation')
@@ -273,9 +268,3 @@ class DifferentialEvolution:
 
         plt.tight_layout()
         plt.show()
-
-        # Print insights
-        print(f"\nDiversity Analysis:")
-        print(f"Initial diversity: {self.diversity_history[0]:.4f}")
-        print(f"Final diversity: {self.diversity_history[-1]:.4f}")
-        print(f"Diversity reduction: {self.diversity_history[0] / self.diversity_history[-1]:.2f}x")
