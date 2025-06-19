@@ -25,10 +25,12 @@ class FireflyAlgorithm:
             dimensions: problem dimensionality
             bounds: search space bounds (min, max)
             population_size: num of fireflies
-            beta0: base attractiveness coefficient
-            gamma: absorption coefficient (controls how fast attractiveness decreases)
-            alpha: randomization parameter
+            beta0: base attractiveness coefficient, usually from 0 to 1, common is 1
+            gamma: absorption coefficient, bigger = faster convergence, lower = more exploration
+            alpha: randomization parameter, usually from 0 to 1, common is 0.2
             alpha_decay: decay rate for alpha (helps convergence)
+            patience: number of generations without improvement before stopping
+            tolerance: minimum improvement to consider an update
             is_minimization: true for minimization, False for maximization
         """
         self.objective_function = objective_function
@@ -98,7 +100,7 @@ class FireflyAlgorithm:
         for i in range(self.population_size):
             for j in range(self.population_size):
                 if i != j and self.swarm[j].intensity > self.swarm[i].intensity:
-                    # random movement
+                    # random movement i.e. random vector for movement equation
                     random_factor = np.random.normal(0, 1, self.dimensions)
 
                     # move firefly i towards brighter firefly j
@@ -107,22 +109,18 @@ class FireflyAlgorithm:
                         self.alpha, random_factor
                     )
 
-                    # Ensure firefly stays within bounds
                     self.swarm[i].clip_to_bounds(self.bounds)
 
-                    # Re-evaluate fitness after movement
                     fitness = self.objective_function(self.swarm[i].position)
                     self.swarm[i].calculate_intensity(fitness, self.is_minimization)
 
     def _random_walk_brightest(self):
-        """Apply random walk to fireflies that don't have brighter neighbors."""
         for firefly in self.swarm:
-            # Check if this firefly is the brightest or among the brightest
+            # check if this firefly is the brightest or among the brightest
             brighter_exists = any(other.intensity > firefly.intensity
                                   for other in self.swarm if other != firefly)
 
             if not brighter_exists:
-                # Perform random walk
                 random_factor = np.random.normal(0, 1, self.dimensions)
                 firefly.random_walk(self.alpha, random_factor)
                 firefly.clip_to_bounds(self.bounds)
@@ -131,19 +129,9 @@ class FireflyAlgorithm:
                 fitness = self.objective_function(firefly.position)
                 firefly.calculate_intensity(fitness, self.is_minimization)
 
-    def optimize(self, max_generations: int, tolerance: float = 1e-6,
+    def optimize(self, max_generations: int,
+                 decay_alpha_on_optimization: bool = True,
                  verbose: bool = True) -> Tuple[np.ndarray, float]:
-        """
-        Run the optimization process.
-
-        Args:
-            max_generations: Maximum number of generations
-            tolerance: Convergence tolerance
-            verbose: Whether to print progress
-
-        Returns:
-            Tuple of (best_position, best_fitness)
-        """
         if verbose:
             print(f"Starting Firefly Algorithm Optimization")
             print(f"Population: {self.population_size}, Dimensions: {self.dimensions}")
@@ -171,8 +159,8 @@ class FireflyAlgorithm:
             if self.patience_counter >= self.patience:
                 break
 
-            # Decay alpha for better convergence
-            self.alpha *= self.alpha_decay
+            if decay_alpha_on_optimization:
+                self.alpha *= self.alpha_decay
 
         if verbose:
             print("-" * 60)
@@ -183,7 +171,6 @@ class FireflyAlgorithm:
         return self.best_firefly.position.copy(), self.best_firefly.fitness
 
     def plot_convergence(self):
-        """Plot the convergence history."""
         plt.figure(figsize=(10, 6))
         plt.plot(self.best_fitness_history, 'b-', linewidth=2)
         plt.xlabel('Generation')
@@ -193,9 +180,7 @@ class FireflyAlgorithm:
         plt.show()
 
     def get_swarm_positions(self) -> np.ndarray:
-        """Get current positions of all fireflies."""
         return np.array([firefly.position for firefly in self.swarm])
 
     def get_swarm_fitness(self) -> np.ndarray:
-        """Get current fitness values of all fireflies."""
         return np.array([firefly.fitness for firefly in self.swarm])
