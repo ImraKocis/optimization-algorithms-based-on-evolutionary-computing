@@ -12,7 +12,7 @@ normal_params = {
     'w_min': 0.2,
     'num_particles': 40,
     'max_iter': 1500,
-    'n_runs': 5,  # More runs for better comparison
+    'n_runs': 5,
     'patience': 150,
     'verbose': False,
     'evaluate_verbose': True
@@ -24,7 +24,6 @@ pso_as_hill_climber_params.update({'c1': 0.0, 'c2': 1.0})
 
 bounds = np.array([[-5.12, 5.12]] * 5)
 
-# Evaluate both configurations
 print("Evaluating Normal PSO (c1=2.0, c2=2.0)...")
 results_normal = evaluate_pso(
     rastrigin_objective_function,
@@ -39,11 +38,9 @@ results_special = evaluate_pso(
     **pso_as_hill_climber_params
 )
 
-# Combine results into one DataFrame
 all_results = results_normal + results_special
 results_df = pd.DataFrame(all_results)
 
-# Add configuration labels
 results_df['config'] = results_df.apply(
     lambda row: 'Normal PSO (c1=2.0, c2=2.0)' if row['c1'] == 2.0 else 'Hill climber PSO (c1=0.0, c2=1.0)',
     axis=1

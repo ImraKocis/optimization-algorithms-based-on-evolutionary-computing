@@ -13,14 +13,14 @@ def fa_plots(df):
     ax2 = fig.add_subplot(1, 3, 2)
     ax3 = fig.add_subplot(1, 3, 3)
 
-    # Plot 1: Heatmap (α vs β₀, averaged over γ)
+    # Heatmap (α vs β₀, averaged over γ)
     heatmap_data = df.groupby(['alpha', 'beta0'])['best_fitness'].mean().unstack()
     sns.heatmap(heatmap_data, annot=True, fmt='.3f', cmap='viridis_r', ax=ax1)
     ax1.set_title('Performance Heatmap\n(α vs β₀, lower is better)')
     ax1.set_xlabel('Beta0 (β₀)')
     ax1.set_ylabel('Alpha (α)')
 
-    # Plot 2: Parameter Correlation Matrix
+    # Parameter Correlation Matrix
     scatter = ax2.scatter(df['convergence_generation'], df['best_fitness'],
                           c=df['alpha'], cmap='plasma', alpha=0.6, s=50)
     ax2.set_xlabel('Average Convergence Generation')
@@ -29,7 +29,7 @@ def fa_plots(df):
     plt.colorbar(scatter, ax=ax2, label='Alpha (α)')
     ax2.grid(True, alpha=0.3)
 
-    # Plot 3: Best vs Worst Comparison
+    # Best vs Worst Comparison
     best_configs = df.nsmallest(10, 'best_fitness')
 
     config_labels = [f'α={row.alpha:.1f}\nβ₀={row.beta0:.1f}\nγ={row.gamma:.1f}'

@@ -1,4 +1,3 @@
-# Example usage and demonstration
 from algorithms.needleman_wunsch.needleman_wunsch import NeedlemanWunsch
 
 
@@ -17,7 +16,6 @@ def demonstrate_needleman_wunsch():
     print(f"\nOptimal Alignment (Score: {score}):")
     print(f"{aligned_seq1}")
 
-    # Print alignment with visual indicators
     alignment_visual = ""
     for a, b in zip(aligned_seq1, aligned_seq2):
         if a == b:

@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-# import matplotlib
-# matplotlib.use('TkAgg') # remove for jupiter
 
 
 def plot_parameter_dashboard(results_df):
@@ -26,7 +24,6 @@ def plot_parameter_dashboard(results_df):
     sns.heatmap(conv_pivot, annot=True, fmt='.1f', ax=axes[0, 1], cmap='plasma_r')
     axes[0, 1].set_title('Average Convergence Iteration')
 
-    # 3. Success rate
     def success_rate(group):
         return ((group['best_value'] - 0.0).abs() < 1e-5).mean() * 100
 
@@ -39,7 +36,6 @@ def plot_parameter_dashboard(results_df):
 
 
 def plot_weight_impact_analysis(results_df):
-    # Prepare the pivot data for heatmap
     pivot_data = results_df.groupby(['w_max', 'c1', 'c2'])['best_value'].mean().reset_index()
     pivot_data['param_combo'] = pivot_data['c1'].astype(str) + ',' + pivot_data['c2'].astype(str)
     heatmap_data = pivot_data.pivot(index='param_combo', columns='w_max', values='best_value')
@@ -83,7 +79,6 @@ def plot_convergence_curves(results_df, top_n=10):
                     iter_values.append(hist[-1])  # Use last value if run ended early
             avg_history.append(np.mean(iter_values))
 
-        # Plot the average convergence curve
         avg_final = param_performance[param]
         plt.plot(avg_history,
                  color=colors[i],

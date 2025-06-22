@@ -1,5 +1,5 @@
 from algorithms.ant_colony.ant_colony import create_distance_matrix, AntColonyOptimizer, \
-    plot_tsp_solution, plot_convergence
+    plot_tsp_solution
 from algorithms.ant_colony.berlin52 import berlin52_coords
 
 berlin52_distances = create_distance_matrix(berlin52_coords)
@@ -16,7 +16,7 @@ aco = AntColonyOptimizer(
 )
 
 print("Running Ant Colony Optimization...")
-best_route, best_distance, history = aco.optimize()
+best_route, best_distance, history, _ = aco.optimize()
 
 gap = ((best_distance - 7542) / 7542) * 100
 print(f"\nTuned ACO Results:")
@@ -25,4 +25,3 @@ print(f"Gap from optimal: {gap:.2f}%")
 
 # Visualize results
 plot_tsp_solution(berlin52_coords, best_route, best_distance)
-plot_convergence(history)

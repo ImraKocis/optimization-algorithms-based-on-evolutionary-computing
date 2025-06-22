@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Optional
-# import matplotlib
-# matplotlib.use('TkAgg') # remove for jupiter
 
 
 class AntColonyOptimizer:
@@ -13,8 +11,8 @@ class AntColonyOptimizer:
             num_iterations: int = 100,
             alpha: float = 1.0,  # usually 1
             beta: float = 5.0,  # usually 5
-            evaporation_rate: float = 0.5,  # usually [0.5, 0.99]
-            Q: float = 100,  # usually 100
+            evaporation_rate: float = 0.5,
+            Q: float = 100,
             elite_factor: float = 1.0,
             patience: int = 20,
             convergence_threshold: float = 1e-8,
@@ -27,7 +25,7 @@ class AntColonyOptimizer:
         - num_iterations: Number of optimization iterations
         - alpha: Pheromone importance factor, default = 1.0
         - beta: Heuristic information importance factor, default = 5.0
-        - evaporation_rate: Rate at which pheromones evaporate (0-1), best option [0.5, 0.99]
+        - evaporation_rate or rho: Rate at which pheromones evaporate (0-1), best option [0.5, 0.99]
         - Q: Pheromone deposit factor, default = 100
         - elite_factor: Bonus factor for best solution pheromone deposit, default = 1.0
         - patience: Number of iterations without improvement before stopping, default = 20
@@ -112,7 +110,7 @@ class AntColonyOptimizer:
         - route: List of cities in order visited
         - total_distance: Total distance of the route
         """
-        # Start from random city
+        # start from random city every time
         start_city = np.random.randint(0, self.num_cities)
         route = [start_city]
         unvisited = list(range(self.num_cities))
@@ -135,7 +133,6 @@ class AntColonyOptimizer:
             unvisited.remove(next_city)
             current_city = next_city
 
-        # return to start city to complete the tour
         route.append(start_city)
 
         total_distance = self._calculate_route_distance(route)
@@ -170,15 +167,13 @@ class AntColonyOptimizer:
         self.pheromone *= (1.0 - self.evaporation_rate)
 
         for route, distance in zip(all_routes, all_distances):
-            # Amount of pheromone to deposit (inversely proportional to distance)
             deposit_amount = self.Q / distance
             if self.verbose:
                 print(f"\nAnt with distance {distance:.2f} deposits {deposit_amount:.4f} pheromone")
-            # Deposit pheromone on each edge of the route
             for i in range(len(route) - 1):
                 city_a, city_b = route[i], route[i + 1]
                 self.pheromone[city_a, city_b] += deposit_amount
-                self.pheromone[city_b, city_a] += deposit_amount  # Symmetric TSP
+                self.pheromone[city_b, city_a] += deposit_amount  # Symmetric TSP, same value in matrix
 
         # Elite ant strategy - extra pheromone for best solution
         if self.best_route is not None:
@@ -206,7 +201,6 @@ class AntColonyOptimizer:
                 iteration_routes.append(route)
                 iteration_distances.append(distance)
 
-            # Update global best solution
             iteration_best_distance = min(iteration_distances)
             prev_best = self.best_distance
             if iteration_best_distance < self.best_distance:
@@ -230,10 +224,8 @@ class AntColonyOptimizer:
                 print(f"No improvement for {self.patience} consecutive iterations")
                 break
 
-            # Update pheromone matrix
             self._update_pheromones(iteration_routes, iteration_distances)
 
-            # Track progress
             self.distance_history.append(self.best_distance)
             self.distance_history = self.distance_history[:iterations_completed]
 

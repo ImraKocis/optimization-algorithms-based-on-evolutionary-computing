@@ -1,5 +1,5 @@
 from algorithms.ant_colony.ant_colony import generate_random_cities, create_distance_matrix, AntColonyOptimizer, \
-    plot_tsp_solution, plot_convergence
+    plot_tsp_solution
 
 num_cities = 5
 cities = generate_random_cities(num_cities, seed=24)
@@ -23,7 +23,7 @@ aco = AntColonyOptimizer(
 )
 
 print("Running Ant Colony Optimization...")
-best_route, best_distance, history = aco.optimize()
+best_route, best_distance, history, _ = aco.optimize()
 
 print(f"\nOptimization completed!")
 print(f"Best route: {best_route}")
@@ -31,4 +31,3 @@ print(f"Best distance: {best_distance:.2f}")
 #
 # # Visualize results
 # plot_tsp_solution(cities, best_route, best_distance)
-# plot_convergence(history)

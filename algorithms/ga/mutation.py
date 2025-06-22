@@ -40,7 +40,6 @@ class AdaptiveGaussianMutation(MutationOperator):
         self.current_generation = generation
 
     def mutate(self, individual: Individual) -> Individual:
-        # starts high, decreases over time
         progress = self.current_generation / self.max_generations
         current_sigma = self.initial_sigma * (1 - progress) + self.final_sigma * progress
 

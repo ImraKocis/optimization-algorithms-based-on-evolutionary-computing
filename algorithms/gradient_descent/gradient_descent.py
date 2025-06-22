@@ -2,7 +2,6 @@ import numpy as np
 
 from algorithms.gradient_descent.optimization_history import OptimizationHistory
 from algorithms.gradient_descent.optimization_result import OptimizationResult
-from utils.objective_functions import quadratic_objective_function
 
 
 class GradientDescent:

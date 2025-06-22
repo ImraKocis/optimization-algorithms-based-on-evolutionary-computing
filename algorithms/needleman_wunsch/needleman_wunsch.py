@@ -3,9 +3,6 @@ from typing import Tuple
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# import matplotlib
-# matplotlib.use('TkAgg') # remove for jupiter
-
 
 class NeedlemanWunsch:
     def __init__(self, match_score: int = 2, mismatch_penalty: int = -1, gap_penalty: int = -2):
@@ -116,19 +113,19 @@ class NeedlemanWunsch:
 
             current_score = self.scoring_matrix[i, j]
 
-            # Priority 1: Check for UP move (deletion in seq2)
+            # Check for UP move (deletion in seq2)
             if i > 0 and current_score == self.scoring_matrix[i - 1, j] + self.gap_penalty:
                 aligned_seq1.append(self.seq1[i - 1])
                 aligned_seq2.append('-')
                 i -= 1
 
-            # Priority 2: Check for LEFT move (insertion in seq2)
+            # Check for LEFT move (insertion in seq2)
             elif j > 0 and current_score == self.scoring_matrix[i, j - 1] + self.gap_penalty:
                 aligned_seq1.append('-')
                 aligned_seq2.append(self.seq2[j - 1])
                 j -= 1
 
-            # Priority 3: DIAGONAL move as last resort (match/mismatch)
+            # DIAGONAL move as last resort (match/mismatch)
             else:
                 if i > 0 and j > 0:
                     aligned_seq1.append(self.seq1[i - 1])
@@ -200,8 +197,8 @@ class NeedlemanWunsch:
         plt.xlabel('Sequence 2')
         plt.ylabel('Sequence 1')
 
-        ax = plt.gca()  # Get current axes
-        ax.xaxis.set_label_position('top')  # Move "Sequence 2" label to top
+        ax = plt.gca()
+        ax.xaxis.set_label_position('top')
         ax.xaxis.tick_top()
 
         plt.tight_layout()
@@ -226,16 +223,6 @@ class NeedlemanWunsch:
 
     @staticmethod
     def get_alignment_stats(aligned_seq1: str, aligned_seq2: str) -> dict:
-        """
-        Calculate alignment statistics.
-
-        Args:
-            aligned_seq1: First aligned sequence
-            aligned_seq2: Second aligned sequence
-
-        Returns:
-            Dictionary with alignment statistics
-        """
         matches = sum(1 for a, b in zip(aligned_seq1, aligned_seq2) if a == b and a != '-')
         mismatches = sum(1 for a, b in zip(aligned_seq1, aligned_seq2) if a != b and a != '-' and b != '-')
         gaps = sum(1 for a, b in zip(aligned_seq1, aligned_seq2) if a == '-' or b == '-')

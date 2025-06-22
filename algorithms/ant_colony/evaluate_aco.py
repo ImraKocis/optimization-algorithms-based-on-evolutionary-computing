@@ -85,7 +85,6 @@ class ACOExperimentVisualizer:
     def plot_parameter_effects(results: pd.DataFrame):
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 
-        # 1. Alpha effect
         sns.boxplot(
             data=results,
             x='alpha',
@@ -96,7 +95,6 @@ class ACOExperimentVisualizer:
         axes[0, 0].set_xlabel('Alpha (Pheromone Importance)')
         axes[0, 0].set_ylabel('Solution Length')
 
-        # 2. Beta effect
         sns.boxplot(
             data=results,
             x='beta',
@@ -107,7 +105,6 @@ class ACOExperimentVisualizer:
         axes[0, 1].set_xlabel('Beta (Heuristic Importance)')
         axes[0, 1].set_ylabel('Solution Length')
 
-        # 3. Rho effect
         sns.boxplot(
             data=results,
             x='evaporation_rate',
@@ -118,7 +115,6 @@ class ACOExperimentVisualizer:
         axes[1, 0].set_xlabel('Rho (Evaporation Rate)')
         axes[1, 0].set_ylabel('Solution Length')
 
-        # 4. Number of ants effect
         sns.boxplot(
             data=results,
             x='num_ants',
@@ -138,7 +134,6 @@ class ACOExperimentVisualizer:
             ['alpha', 'beta', 'evaporation_rate', 'num_ants']
         )['best_distance'].agg(['mean', 'std']).reset_index()
 
-        # Sort by mean performance
         rankings = rankings.sort_values('mean')
 
         print("\nTop 5 Parameter Combinations:")
@@ -167,14 +162,14 @@ class ACOExperimentVisualizer:
 
     @staticmethod
     def analyze_convergence_behavior(results: pd.DataFrame):
-        # Calculate coefficient of variation for each parameter combination
+        # coefficient of variation for each parameter combination
         cv_analysis = results.groupby(
             ['alpha', 'beta', 'evaporation_rate', 'num_ants']
         )['best_distance'].agg(['mean', 'std']).reset_index()
 
         cv_analysis['cv'] = cv_analysis['std'] / cv_analysis['mean']
 
-        # Sort by CV to identify most unstable combinations
+        # sort by CV to identify most unstable combinations
         cv_analysis = cv_analysis.sort_values('cv', ascending=False)
 
         print("\nParameter Combinations Most Likely to Cause Non-convergence:")
@@ -190,23 +185,3 @@ class ACOExperimentVisualizer:
             print(f"  CV: {row['cv']:.3f}")
             print(f"  Mean Length: {row['mean']:.2f}")
             print(f"  Std Dev: {row['std']:.2f}")
-
-        # Identify potential theoretical issues
-        print("\nTheoretical Analysis of Non-convergence Conditions:")
-
-        # Check for exploration/exploitation imbalance
-        exploration_issues = cv_analysis[
-            (cv_analysis['alpha'] > 2 * cv_analysis['beta']) |
-            (cv_analysis['beta'] > 2 * cv_analysis['alpha'])
-            ]
-
-        if not exploration_issues.empty:
-            print("\nImbalanced Exploration/Exploitation:")
-            print("High risk when alpha >> beta (over-exploitation) or")
-            print("beta >> alpha (over-exploration)")
-
-        # Check for rapid pheromone decay
-        evaporation_issues = cv_analysis[cv_analysis['evaporation_rate'] > 0.7]
-        if not evaporation_issues.empty:
-            print("\nRapid Pheromone Evaporation:")
-            print("High risk with evaporation_rate > 0.7 causing instability")

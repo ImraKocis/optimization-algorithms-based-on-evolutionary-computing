@@ -9,19 +9,20 @@ minimum at [0, 0] with value 0.
 maximum at [-4.52299366..., 4.52299366...] with value 80.7.
 """
 
-bounds = np.array([[-5.12, 5.12]] * 2)
+bounds = np.array([[-5.12, 5.12]] * 5)
 pso = ParticleSwarmOptimizer(
     objective_func=rastrigin_objective_function,
     bounds=bounds,
     num_particles=25,
-    max_iter=350,
-    c1=0.1,
-    c2=0.1,
+    max_iter=200,
+    c1=2,
+    c2=2,
     w_max=0.9,
     w_min=0.2,
     convergence_threshold=1e-12,
-    patience=100,
-    verbose=True
+    patience=50,
+    verbose=True,
+    maximize=False
 )
 best_pos, best_val, history, _ = pso.optimize()
 print("Best Position:", best_pos)

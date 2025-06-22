@@ -44,10 +44,6 @@ class DifferentialEvolution:
         self.stagnation_count = 0
 
     def initialize_population(self) -> None:
-        """
-        Initialize population randomly within bounds.
-        Each individual is a vector of decision variables.
-        """
         self.population = np.zeros((self.population_size, self.dimensions))
 
         for i in range(self.population_size):
@@ -122,17 +118,15 @@ class DifferentialEvolution:
                   target_fitness: float) -> Tuple[np.ndarray, float]:
         trial_fitness = self.objective_function(trial_vector)
 
-        # Select the better individual (minimization)
+        # Select the better individual (minimization), greedy selection
         if trial_fitness < target_fitness:
             return trial_vector, trial_fitness
         else:
             return target_vector, target_fitness
 
     def repair_bounds(self, vector: np.ndarray) -> np.ndarray:
-        """
-        Repair vector to ensure all values are within bounds.
-        Uses boundary constraint handling.
-        """
+        # Repair vector to ensure all values are within bounds.
+        # Uses boundary constraint handling.
         repaired_vector = vector.copy()
 
         for i in range(self.dimensions):
@@ -142,10 +136,7 @@ class DifferentialEvolution:
         return repaired_vector
 
     def evolve_generation(self) -> None:
-        """
-        Perform one generation of DE evolution.
-        For each individual: mutation -> crossover -> selection
-        """
+        # For each individual: mutation -> crossover -> selection
         new_population = np.zeros_like(self.population)
         new_fitness = np.zeros_like(self.fitness)
 
@@ -165,12 +156,10 @@ class DifferentialEvolution:
                 self.best_fitness = selected_fitness
                 self.best_individual = selected_vector.copy()
 
-        # Update population and fitness
         self.population = new_population
         self.fitness = new_fitness
         self.generation += 1
 
-        # Track fitness history
         self.fitness_history.append(self.best_fitness)
         current_diversity = self.calculate_population_diversity()
         self.diversity_history.append(current_diversity)
@@ -200,19 +189,16 @@ class DifferentialEvolution:
         print(f"CR (crossover rate): {self.CR}")
         print(f"Dimensions: {self.dimensions}")
 
-        # Evolution loop
         for generation in range(max_generations):
             prev_best = self.best_fitness
 
             # Evolve one generation
             self.evolve_generation()
 
-            # Print progress
             if verbose and (generation + 1) % 100 == 0:
                 print(f"Generation {generation + 1:4d}: "
                       f"Best fitness = {self.best_fitness:.8f}")
 
-            # Check convergence
             if abs(prev_best - self.best_fitness) < tolerance:
                 if verbose:
                     print(f"\nConverged at generation {generation + 1}")

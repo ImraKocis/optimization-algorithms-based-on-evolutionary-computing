@@ -19,17 +19,6 @@ class MutationMethod(Enum):
 
 
 def find_convergence_generation(best_fitness_history, stagnation_limit, minimize=False):
-    """
-    Find the generation where the best fitness was last improved before stagnation
-
-    Args:
-        best_fitness_history: List of best fitness values per generation
-        stagnation_limit: Number of generations without improvement to trigger stagnation
-        minimize: True if minimizing fitness, False if maximizing
-
-    Returns:
-        Generation number where convergence occurred (last improvement)
-    """
     if len(best_fitness_history) < 2:
         return 0
 
@@ -40,7 +29,6 @@ def find_convergence_generation(best_fitness_history, stagnation_limit, minimize
     for gen in range(1, len(best_fitness_history)):
         current_fitness = best_fitness_history[gen]
 
-        # Check for improvement based on optimization direction
         if minimize:
             improved = current_fitness < best_so_far
         else:
@@ -53,7 +41,6 @@ def find_convergence_generation(best_fitness_history, stagnation_limit, minimize
         else:
             current_stagnation += 1
             if current_stagnation >= stagnation_limit:
-                # Stagnation detected - return last improvement generation
                 break
 
     return last_improvement_gen

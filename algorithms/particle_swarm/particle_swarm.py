@@ -58,9 +58,6 @@ class Particle:
                 self.velocity[i] = -self.velocity[i]
         self.position = new_position
 
-    def is_within_bounds(self):
-        return np.all(self.position >= self.bounds[:, 0]) and np.all(self.position <= self.bounds[:, 1])
-
 
 class ParticleSwarmOptimizer:
     def __init__(
@@ -186,7 +183,6 @@ class ParticleSwarmOptimizer:
             particle.update_position()
 
     def calculate_diversity(self):
-        """Calculate swarm diversity to detect premature convergence."""
         positions = np.array([p.position for p in self.particles])
         center = np.mean(positions, axis=0)
         distances = [np.linalg.norm(pos - center) for pos in positions]

@@ -11,10 +11,6 @@ from algorithms.ga.selection import TournamentSelection, RouletteWheelSelection
 from algorithms.ga.utils import SelectionMethod, CrossoverMethod, MutationMethod, find_convergence_generation
 
 
-# import matplotlib
-# matplotlib.use('TkAgg') # remove for jupiter
-
-
 class GeneticAlgorithm:
 
     def __init__(self,

@@ -1,36 +1,29 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-# import matplotlib
-# matplotlib.use('TkAgg') # remove for jupiter
 
 
 def plot_pso_comparison(results_df):
-
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
 
-    # 1. Performance Box Plot
     sns.boxplot(data=results_df, x='config', y='best_value', ax=axes[0, 0])
     axes[0, 0].set_title('Performance Comparison: Final Best Values')
     axes[0, 0].set_ylabel('Best Value Found')
     axes[0, 0].tick_params(axis='x')
     axes[0, 0].grid(True, alpha=0.3)
 
-    # 2. Convergence Speed Box Plot
     sns.boxplot(data=results_df, x='config', y='convergence_iter', ax=axes[0, 1])
     axes[0, 1].set_title('Convergence Speed Comparison')
     axes[0, 1].set_ylabel('Iterations to Convergence')
     axes[0, 1].tick_params(axis='x')
     axes[0, 1].grid(True, alpha=0.3)
 
-    # 3. Convergence Curves
     configs = results_df['config'].unique()
     colors = ['blue', 'red']
 
     for i, config in enumerate(configs):
         subset = results_df[results_df['config'] == config]
 
-        # Calculate average convergence curve
         max_len = max(len(hist) for hist in subset['history'])
         avg_history = []
 

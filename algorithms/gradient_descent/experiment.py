@@ -31,7 +31,6 @@ def gd_experiment():
                 'iterations': result.iterations,
                 'final_error': abs(result.x_optimal - 2.0)
             }
-            # print(f"  {key}: converged={result.converged}, final_error={abs(result.x_optimal - 2.0):.2e}")
 
     for lr in learning_rates:
         optimizer = GradientDescent(
@@ -50,7 +49,6 @@ def gd_experiment():
             'iterations': result.iterations,
             'final_error': abs(result.x_optimal - 2.0)
         }
-        # print(f"  {key}: converged={result.converged}, final_error={abs(result.x_optimal - 2.0):.2e}")
 
     return results
 

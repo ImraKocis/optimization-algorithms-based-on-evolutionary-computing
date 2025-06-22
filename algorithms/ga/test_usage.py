@@ -28,7 +28,6 @@ def solve_rastrigin():
         minimize=True
     )
 
-    # Evolve solution
     best_solution = ga.evolve(rastrigin_objective_function)
     con_i = ga.get_convergence_info()
     print(f"Convergence generation: {con_i}")
@@ -39,15 +38,12 @@ def solve_rastrigin():
     print(f"Minimized Rastrigin value: {minimized_value:.6f}")
     print(f"Best fitness: {best_solution.fitness}")
 
-    # Plot evolution
     ga.plot_evolution()
 
 
-# Example 2: Solving Knapsack Problem (Discrete Optimization)
 def solve_knapsack():
     print("\n=== Solving Knapsack Problem ===")
 
-    # Create a knapsack problem
     knapsack = create_random_knapsack_problem(
         num_items=20,
         min_value=10.0,
@@ -55,7 +51,7 @@ def solve_knapsack():
         min_weight=5.0,
         max_weight=30.0,
         capacity_factor=0.65,
-        seed=42  # For reproducible results
+        seed=42
     )
 
     knapsack.print_problem_info()
@@ -80,15 +76,12 @@ def solve_knapsack():
     print(f"\n=== Final Results ===")
     print(f"Best fitness: {best_solution.fitness:.2f}")
 
-    # Print detailed solution
     knapsack.print_solution(best_solution.genes)
 
-    # Manual verification
     selected_items, total_weight, total_value = knapsack.decode_solution(best_solution.genes)
     print(f"\nManual verification:")
     print(f"Calculated total value: {total_value:.2f}")
     print(f"GA fitness value: {best_solution.fitness:.2f}")
     print(f"Values match: {'Yes' if abs(total_value - best_solution.fitness) < 0.01 else 'No'}")
 
-    # Plot evolution
     ga.plot_evolution()

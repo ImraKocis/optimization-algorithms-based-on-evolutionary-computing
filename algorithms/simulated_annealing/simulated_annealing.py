@@ -1,38 +1,6 @@
 import numpy as np
 
 from algorithms.simulated_annealing.cooling_schedules import linear_cooling, COOLING_SCHEDULES
-from utils.objective_functions import rastrigin_objective_function
-
-"""
-kako radi algo:
-
-Inicijaliziramo pocetnu temp, broj iteracija, step size te zeljenu funkciju hladenja i iterirammo,
-u nasem slucaju sve dok ne dodemo do n iteracija.
-
-U svakoj iteraciji kreiraom novog kandidata koji ovisi o trenutnom rjesenju i step size-u. Koji
-je uvijek u obliku [num] * dimensions - to su koordiante novog kandidata u prostoru.
-
-Nakon toga ubacimo kandidata (koordiante) u zeljenu objective funckiju te dobijemo vrijednost te točke
-
-Nakon toga algo odlucuje zeli li prihvatiti kandidata tako što će napraviti usporedbu izmedu trenutne najbolje
-vrijednosti i trenutne vrijednosti koju smo dobili od objective funckije - singularne vrijednosti.
-
-Ukoliko je, u nasem slucaju, delta manja od 0, automatksi znamo da smo nasli bolju točku tj. vrijednost i 
-automatski cemo ju prihvatiti.
-
-Ukoliko je delta veća od 0. Tada nam simulated annealing dolzai sa svojom logikom te radimo usporedbu
-nekog radnom broja [0, 1) i exp(-delta / T) - gdje je delta razlika izmedu vrijednosti kandidata i trenutne najbolje
-vrijednosti, a T je trenutna temperatura.
-
-Što je delta manja i temperatura veća, to je veća vjerojatnost da ćemo prihvatiti kandidata. 
-
-Ukoliko je temperatura jako visoka doči ćemo do faze da konst. prihvaćamo kandidate bez obzira na njihovu vrijednost. 
-Opet ako je temp premala nećemo više vjerjatno prihvaćati niti jednog kandidata. Kod ekstrema u temperaturi delta nam
-vise ne igra veliku ulogu.
-
-Ako je random broj mani od probabilitija, uzimamo vrijednost kandidata i postavljmo tog kandidata kao najbolju 
-vrijednost.
-"""
 
 
 def simulated_annealing(

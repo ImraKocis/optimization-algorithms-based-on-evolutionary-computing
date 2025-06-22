@@ -25,34 +25,22 @@ def hill_climber(objective_func, dimensions, bounds, n_iterations=1000, step_siz
         history: list, best_value at each iteration (for plotting).
     """
 
-    # random starting point within some bounds
     solution = np.random.uniform(low=bounds[:, 0], high=bounds[:, 1], size=dimensions)
-    # best solution so far - init solution - placeholder in format [num, num] * dimensions
     best_solution = solution.copy()
-    # best value so far - placeholder - single value
     best_value = objective_func(solution)
-    # history of best values
     history = [best_value]
 
-    # start tracking main time
     time_start = time.time()
     time_total_local_search = 0.0
     time_max_iter = 0.0
 
     for i in range(n_iterations):
-        # start tracking time for this iteration
         iter_start = time.time()
-        # generate a candidate solution by taking a random step in some cases this
-        # can result with a solution outside the bounds
         candidate = solution + np.random.randn(dimensions) * step_size
-        # ensure candidate is within bounds by setting out-of-bounds values to the nearest bound value
         candidate = np.clip(candidate, bounds[:, 0], bounds[:, 1])
-        # evaluate candidate solution
         candidate_eval = objective_func(candidate)
 
-        # if the candidate is better, move to it
         if candidate_eval < best_value:
-            # current solution is this candidate, and we will take next step from this candidate.
             solution = candidate
             # why copy()? If we just wrote best_solution = candidate, then if we later change candidate,
             # best_solution would also change (because both point to the same array in memory).
